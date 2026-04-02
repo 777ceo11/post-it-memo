@@ -11,14 +11,11 @@ const API_ENDPOINT = "/api/notes";
 export async function fetchNotesFromSheets(): Promise<NoteData[]> {
   try {
     const response = await fetch(API_ENDPOINT);
-    if (!response.ok) {
-      throw new Error(`Server returned ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`Status ${response.status}`);
     const data = await response.json();
-    // 데이터 구조 필터링: 구글 시트에서 빈 데이터가 올 수 있음
     return data.filter((item: any) => item.id);
   } catch (error) {
-    console.error("fetchNotesFromSheets Error:", error);
+    console.error("fetchNodes Error:", error);
     return [];
   }
 }
@@ -30,7 +27,7 @@ export async function createNoteInSheets(note: NoteData) {
       body: JSON.stringify({ action: "create", ...note }),
     });
   } catch (error) {
-    console.error("createNoteInSheets Error:", error);
+    console.error("create Error:", error);
   }
 }
 
@@ -41,7 +38,7 @@ export async function updateNoteInSheets(note: Partial<NoteData> & { id: string 
       body: JSON.stringify({ action: "update", ...note }),
     });
   } catch (error) {
-    console.error("updateNoteInSheets Error:", error);
+    console.error("update Error:", error);
   }
 }
 
@@ -52,7 +49,7 @@ export async function deleteNoteFromSheets(id: string) {
       body: JSON.stringify({ action: "delete", id }),
     });
   } catch (error) {
-    console.error("deleteNoteFromSheets Error:", error);
+    console.error("delete Error:", error);
   }
 }
 
@@ -63,6 +60,7 @@ export async function clearAllNotesInSheets() {
       body: JSON.stringify({ action: "clearAll" }),
     });
   } catch (error) {
-    console.error("clearAllNotesInSheets Error:", error);
+    console.error("clearAll Error:", error);
   }
 }
+// Sync code updated at: 2026-04-02-1451

@@ -1,44 +1,45 @@
 import { NextResponse } from 'next/server';
 
-// 빌드마다 환경변수가 주입될 수 있도록 동적으로 로드합니다.
 const GAS_URL = (process.env.GAS_URL || process.env.NEXT_PUBLIC_GAS_URL || "").trim();
 
 export async function GET() {
   if (!GAS_URL) return NextResponse.json([], { status: 200 });
-
   try {
-    const response = await fetch(GAS_URL, { cache: 'no-store' });
-    if (!response.ok) throw new Error(`GAS GET Status: ${response.status}`);
+    const response = await fetch(GAS_URL, {
+      method: "GET",
+      cache: "no-store",
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+      },
+      redirect: "follow"
+    });
+
+    if (!response.ok) throw new Error(`GAS HTTP Status: ${response.status}`);
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error: any) {
-    console.error("[GET Error]", error.message);
+    console.error("[GET Proxy Error]:", error.message);
     return NextResponse.json([], { status: 200 });
   }
 }
 
 export async function POST(request: Request) {
-  if (!GAS_URL) {
-    console.error("[POST Error] GAS_URL is missing in environment");
-    return NextResponse.json({ error: 'GAS_URL not found' }, { status: 500 });
-  }
-
+  if (!GAS_URL) return NextResponse.json({ error: 'GAS_URL missing' }, { status: 500 });
   try {
     const body = await request.json();
-    console.log("[Proxy POST] Sending Action:", body.action);
-
     const response = await fetch(GAS_URL, {
       method: "POST",
       body: JSON.stringify(body),
       redirect: "follow",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+      },
     });
-
     const result = await response.json();
     return NextResponse.json(result);
   } catch (error: any) {
-    console.error("[POST Error Detailed]:", error.message);
-    return NextResponse.json({ error: "GAS Sync Failed", detail: error.message }, { status: 200 });
+    console.error("[POST Proxy Error]:", error.message);
+    return NextResponse.json({ error: "Sync failed", detail: error.message }, { status: 200 });
   }
 }
-// Force update trigger: 2026-04-02-1450
